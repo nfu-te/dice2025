@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Simple dice calculator</title>
+    <style>
+        body {
+            color: blue;
+            font-family: Arial;
+            background-color: #f5f3e5;
+            font-weight: bold;
+        }
+        .button3d {
+            background-color: tomato;
+            color: white;
+            border: 3px solid green;
+            font-weight: bold;
+            border-radius: 5px;
+            box-shadow: 8px 8px 3px rgba(0, 0, 0, 0.5);
+            transition: transform 0.3s, box-shadow 0.3s;
+            height: 100px; /* Set a fixed height */
+            line-height: 100px; /* Align text vertically */
+            text-align: center;
+            font-size: 40px; /* Larger font size */
+            margin: 10px; /* Space between buttons */
+        }
+        .button3d.kasta {
+            width: 250px; /* Width for "Kasta tärningar!" */
+        }
+        .button3d.automatiska {
+            width: 450px; /* Further increased width for "Automatiska kast" */
+        }
+        .button3d:active {
+            transform: translateY(3px);
+            box-shadow: 0 0 0 rgba(0, 0, 0, 0.5);
+        }
+        input[type="text"] {
+            background-color: black;
+            color: yellow;
+            border: 2px solid red;
+            margin-top: 10px;
+            padding: 10px;
+            font-size: 18px; /* Set font size for input text */
+        }
+        .button-container {
+            display: flex;
+            align-items: center;
+        }
+        .green-bar {
+            color: green;
+            font-size: 24px; /* Set the font size for the green bars */
+            display: inline-block;
+            width: 12px; /* Set the width of the green bars */
+            height: 30px; /* Set the height of the green bars */
+            text-align: center;
+        }
+        #sumDisplay {
+            font-size: 20px; /* Increased font size for sum display text */
+            white-space: nowrap; /* Prevent line breaks for consistent alignment */
+        }
+        #tossCount {
+            font-size: 18px; /* Set font size for toss count text */
+        }
+        .sum-entry {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px; /* Increased space between lines */
+        }
+        .sum-number {
+            width: 50px; /* Fixed width to prevent jumping */
+            text-align: right; /* Align numbers to the right */
+            font-size: 28px; /* Increased font size for numbers */
+        }
+    </style>
+    <script>
+        var sumCounts = new Array(13).fill(0); // Initialize array with zeros
+        var tossCount = 0;
+        var intervalId = null; // Variable to store the interval ID
+ 
+        function makeRandomLine() {
+            let a = Math.floor(Math.random() * 6) + 1;
+            let b = Math.floor(Math.random() * 6) + 1;
+            let sum = a + b;
+            var diceSum = document.getElementById("diceSum");
+            diceSum.innerHTML = "Summa: " + a + " + " + b + " = " + sum;
+ 
+            sumCounts[sum]++;
+            updateSumDisplay();
+            tossCount++;
+            var tossCountElement = document.getElementById("tossCount");
+            tossCountElement.innerHTML = "Antal kast: " + tossCount;
+           
+            playButtonSound(); // Play the sound when the button is pressed
+        }
+ 
+        function updateSumDisplay() {
+            var sumDisplay = document.getElementById("sumDisplay");
+            var displayText = "";
+ 
+            for (var i = 2; i <= 12; i++) {
+                displayText += "<div class='sum-entry'>";
+                displayText += "<span class='sum-number'>" + i + ":</span>";
+                for (var j = 0; j < sumCounts[i]; j++) {
+                    displayText += "<span class='green-bar'>|</span>";
+                }
+                displayText += "</div>";
+            }
+ 
+            sumDisplay.innerHTML = displayText;
+        }
+ 
+        function startAutoRoll() {
+            if (intervalId === null) {
+                intervalId = setInterval(makeRandomLine, 500); // Call makeRandomLine every 500 milliseconds
+            }
+        }
+ 
+        function stopAutoRoll() {
+            if (intervalId !== null) {
+                clearInterval(intervalId); // Stop the automatic rolling
+                intervalId = null;
+            }
+        }
+ 
+        window.onload = function() {
+            updateSumDisplay();
+        };
+ 
+        // Sound Functionality
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+ 
+        function playButtonSound() {
+            const oscillator = audioContext.createOscillator();
+            oscillator.type = 'square';
+            oscillator.frequency.setValueAtTime(600, audioContext.currentTime);
+ 
+            const gainNode = audioContext.createGain();
+            gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+ 
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+ 
+            gainNode.gain.exponentialRampToValueAtTime(0.00001, audioContext.currentTime + 0.1);
+ 
+            oscillator.start();
+            oscillator.stop(audioContext.currentTime + 0.1);
+        }
+    </script>
+</head>
+<body>
+    <h1>Tärnings-kapplöpning</h1>
+    <p></p>
+    <p id="sumDisplay"></p>
+    <p id="tossCount">Antal kast: 0</p>
+    <div class="button-container">
+        <button class="button3d kasta" onclick="makeRandomLine()">Kasta tärningar!</button>
+        <button class="button3d automatiska" onclick="startAutoRoll()">Automatiska kast</button>
+        <button class="button3d" onclick="stopAutoRoll()">Stopp</button>
+    </div>
+    <p id="diceSum"></p>
+</body>
+</html>
